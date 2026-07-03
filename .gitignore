@@ -1,0 +1,22 @@
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Sanal ortamlar
+venv/
+.venv/
+env/
+
+# Büyük veri setleri 
+*.zip
+*.tar
+*.gz
