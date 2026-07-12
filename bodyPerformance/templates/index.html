@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Body Performance Classifier | Fiziksel Uygunluk Analizi</title>
+  <meta name="description" content="Yapay zeka destekli beden performans analiz aracı. 11 ölçümle fiziksel uygunluk sınıfınızı öğrenin." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+  <!-- ── Arka plan partikül canvas ── -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- ── Glow orbs ── -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- ══════════════ HEADER ══════════════ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">Body<strong>AI</strong></span>
+      </div>
+      <div class="header-badge">
+        <span class="pulse-dot"></span>
+        Model Aktif
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════ HERO ══════════════ -->
+  <section class="hero">
+    <h1 class="hero-title">
+      Fiziksel Uygunluk<br />
+      <span class="gradient-text">Yapay Zeka Analizi</span>
+    </h1>
+    <p class="hero-subtitle">
+      11 ölçümünüzü girin, derin öğrenme modelimiz <br />
+      fiziksel uygunluk sınıfınızı saniyeler içinde belirlesin.
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">13.393</span><span class="stat-label">Eğitim Verisi</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-num">4</span><span class="stat-label">Sınıf</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-num">300</span><span class="stat-label">Epoch</span></div>
+    </div>
+  </section>
+
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main class="main-grid">
+
+    <!-- ─── FORM PANEL ─── -->
+    <div class="glass-card form-card">
+      <div class="card-header">
+        <span class="card-icon">📋</span>
+        <h2>Ölçüm Verileri</h2>
+      </div>
+
+      <form id="predForm" autocomplete="off">
+
+        <!-- Kişisel Bilgiler -->
+        <div class="field-group">
+          <div class="group-label">Kişisel Bilgiler</div>
+          <div class="fields-row">
+
+            <div class="field">
+              <label for="yas">Yaş</label>
+              <div class="input-wrap">
+                <span class="input-icon">🎂</span>
+                <input id="yas" name="yas" type="number" min="10" max="100" step="1" placeholder="25" required />
+                <span class="input-unit">yıl</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="cinsiyet">Cinsiyet</label>
+              <div class="gender-toggle">
+                <input type="radio" id="erkek" name="cinsiyet" value="1" checked />
+                <label for="erkek" class="gender-btn">
+                  <span>♂</span> Erkek
+                </label>
+                <input type="radio" id="kadin" name="cinsiyet" value="0" />
+                <label for="kadin" class="gender-btn">
+                  <span>♀</span> Kadın
+                </label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Vücut Ölçüleri -->
+        <div class="field-group">
+          <div class="group-label">Vücut Ölçüleri</div>
+          <div class="fields-row">
+
+            <div class="field">
+              <label for="boy">Boy</label>
+              <div class="input-wrap">
+                <span class="input-icon">📏</span>
+                <input id="boy" name="boy" type="number" min="100" max="230" step="0.1" placeholder="175.0" required />
+                <span class="input-unit">cm</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="kilo">Kilo</label>
+              <div class="input-wrap">
+                <span class="input-icon">⚖️</span>
+                <input id="kilo" name="kilo" type="number" min="30" max="200" step="0.1" placeholder="70.0" required />
+                <span class="input-unit">kg</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="vucut_yag">Vücut Yağ Oranı</label>
+              <div class="input-wrap">
+                <span class="input-icon">🫧</span>
+                <input id="vucut_yag" name="vucut_yag" type="number" min="1" max="60" step="0.1" placeholder="18.5" required />
+                <span class="input-unit">%</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Tansiyon -->
+        <div class="field-group">
+          <div class="group-label">Tansiyon</div>
+          <div class="fields-row">
+
+            <div class="field">
+              <label for="buyuk_tansiyon">Büyük Tansiyon (Sistolik)</label>
+              <div class="input-wrap">
+                <span class="input-icon">❤️</span>
+                <input id="buyuk_tansiyon" name="buyuk_tansiyon" type="number" min="60" max="200" step="1" placeholder="120" required />
+                <span class="input-unit">mmHg</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="kucuk_tansiyon">Küçük Tansiyon (Diyastolik)</label>
+              <div class="input-wrap">
+                <span class="input-icon">💙</span>
+                <input id="kucuk_tansiyon" name="kucuk_tansiyon" type="number" min="40" max="150" step="1" placeholder="80" required />
+                <span class="input-unit">mmHg</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Performans Testleri -->
+        <div class="field-group">
+          <div class="group-label">Performans Testleri</div>
+          <div class="fields-row">
+
+            <div class="field">
+              <label for="kavrama">Kavrama Kuvveti</label>
+              <div class="input-wrap">
+                <span class="input-icon">🤜</span>
+                <input id="kavrama" name="kavrama" type="number" min="0" max="100" step="0.1" placeholder="40.5" required />
+                <span class="input-unit">kg</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="esneklik">Otur-Uzan Esneklik</label>
+              <div class="input-wrap">
+                <span class="input-icon">🤸</span>
+                <input id="esneklik" name="esneklik" type="number" min="-30" max="50" step="0.1" placeholder="16.0" required />
+                <span class="input-unit">cm</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="mekik">Mekik Sayısı</label>
+              <div class="input-wrap">
+                <span class="input-icon">💥</span>
+                <input id="mekik" name="mekik" type="number" min="0" max="100" step="1" placeholder="30" required />
+                <span class="input-unit">adet</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="atlama">Uzun Atlama</label>
+              <div class="input-wrap">
+                <span class="input-icon">🦘</span>
+                <input id="atlama" name="atlama" type="number" min="0" max="300" step="1" placeholder="180" required />
+                <span class="input-unit">cm</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <button id="submitBtn" type="submit" class="predict-btn">
+          <span class="btn-text">Analiz Et</span>
+          <span class="btn-spinner" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+          </span>
+          <span class="btn-arrow">→</span>
+        </button>
+
+      </form>
+    </div>
+
+    <!-- ─── RESULT PANEL ─── -->
+    <div class="result-column">
+
+      <!-- Boş durum -->
+      <div class="glass-card result-empty" id="resultEmpty">
+        <div class="empty-icon">🤖</div>
+        <p class="empty-title">Tahmin Bekleniyor</p>
+        <p class="empty-sub">Ölçüm verilerini girin ve<br />analizi başlatın.</p>
+      </div>
+
+      <!-- Sonuç kartı (gizli başlar) -->
+      <div class="glass-card result-card" id="resultCard" hidden>
+
+        <div class="card-header">
+          <span class="card-icon">🎯</span>
+          <h2>Analiz Sonucu</h2>
+        </div>
+
+        <!-- Ana sınıf -->
+        <div class="class-display">
+          <div class="class-badge" id="classBadge">
+            <span class="class-emoji" id="classEmoji"></span>
+            <span class="class-letter" id="classLetter"></span>
+          </div>
+          <div class="class-info">
+            <div class="class-name" id="className"></div>
+            <div class="class-desc" id="classDesc"></div>
+          </div>
+        </div>
+
+        <!-- Olasılık çubukları -->
+        <div class="probs-section">
+          <div class="probs-title">Sınıf Olasılıkları</div>
+          <div class="prob-bars" id="probBars"></div>
+        </div>
+
+        <!-- Radar -->
+        <div class="result-note" id="resultNote"></div>
+
+        <button class="reset-btn" id="resetBtn">↩ Yeniden Analiz</button>
+      </div>
+
+      <!-- Sınıf bilgi kartları -->
+      <div class="class-info-grid">
+        <div class="class-info-card grade-a">
+          <span class="ci-letter">A</span>
+          <span class="ci-label">Çok İyi</span>
+          <span class="ci-emoji">🏆</span>
+        </div>
+        <div class="class-info-card grade-b">
+          <span class="ci-letter">B</span>
+          <span class="ci-label">İyi</span>
+          <span class="ci-emoji">💪</span>
+        </div>
+        <div class="class-info-card grade-c">
+          <span class="ci-letter">C</span>
+          <span class="ci-label">Orta</span>
+          <span class="ci-emoji">📊</span>
+        </div>
+        <div class="class-info-card grade-d">
+          <span class="ci-letter">D</span>
+          <span class="ci-label">Zayıf</span>
+          <span class="ci-emoji">⚠️</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>PyTorch MultiClass Neural Network &bull; 11 Özellik &bull; 4 Sınıf</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
