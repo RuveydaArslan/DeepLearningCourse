@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.A.D.S - Şüpheli Aktivite Tespit Sistemi</title>
+    <!-- Google Fonts: Inter & JetBrains Mono for logs -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <!-- Threat Sirens / Visual Alarm Overlay -->
+    <div id="alarm-overlay" class="alarm-overlay hidden">
+        <div class="alarm-scanner"></div>
+        <div class="alarm-banner">
+            <i data-lucide="shield-alert" class="siren-icon pulse"></i>
+            <div class="alarm-text">
+                <h2>KRİTİK GÜVENLİK İHLALİ</h2>
+                <p id="alarm-message">Şüpheli aktivite algılandı!</p>
+            </div>
+            <button id="dismiss-alarm-btn" class="dismiss-btn">TEHLİKEYİ ONAYLA</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar: Model Info & Controls -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <i data-lucide="shield" class="logo-icon"></i>
+                <div class="logo-text">
+                    <h1>S.A.D.S</h1>
+                    <span>SECURITY AI DETECTOR</span>
+                </div>
+            </div>
+
+            <div class="system-status-card">
+                <div class="status-indicator">
+                    <span class="status-dot pulsing"></span>
+                    <span class="status-text">SİSTEM AKTİF</span>
+                </div>
+                <div class="model-meta">
+                    <small>Yapay Zeka Modeli:</small>
+                    <span class="model-name">Suspicious_Activities_nano.pt</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>SESLİ UYARI AYARLARI</h3>
+                <div class="control-row">
+                    <span class="control-label">Siren Alarmı:</span>
+                    <button id="mute-btn" class="mute-btn" title="Sesi Aç/Kapat">
+                        <i data-lucide="volume-2" id="mute-icon"></i>
+                        <span id="mute-text">Ses Açık</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>ALGILANABİLİR SINIFLAR</h3>
+                <div class="class-list-container">
+                    <ul id="class-list" class="class-list">
+                        <!-- Class items will be dynamically injected here -->
+                        <li class="loading-placeholder">Sınıflar yükleniyor...</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-meta">
+                <p>Antigravity Security Suite v1.0.0</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Dashboard -->
+        <main class="main-content">
+            <!-- Top Navbar -->
+            <header class="navbar">
+                <div class="nav-title">
+                    <h2>KONTROL PANELİ</h2>
+                    <p>Gerçek zamanlı şüpheli aktivite ve tehdit tespit paneli</p>
+                </div>
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-threats">0</span>
+                        <span class="stat-label">Tehdit Uyarısı</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-processed">0</span>
+                        <span class="stat-label">Analiz Edilen Dosya</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Left Column: Upload and Media Viewer -->
+                <div class="grid-col-left">
+                    <!-- Upload Box -->
+                    <div class="glass-panel upload-panel" id="upload-panel">
+                        <div class="drag-zone" id="drag-zone">
+                            <input type="file" id="file-input" accept="image/*,video/*" class="file-input-hidden">
+                            <i data-lucide="upload-cloud" class="upload-icon"></i>
+                            <h3>Analiz Edilecek Medyayı Seçin</h3>
+                            <p>Fotoğraf veya Video dosyasını sürükleyip bırakın veya tıklayın</p>
+                            <span class="supported-formats">Desteklenenler: MP4, AVI, MOV, JPG, PNG, WEBP</span>
+                        </div>
+                    </div>
+
+                    <!-- Media Viewer (Result Display) -->
+                    <div class="glass-panel result-panel hidden" id="result-panel">
+                        <div class="panel-header">
+                            <h3><i data-lucide="eye" class="panel-icon"></i> ANALİZ ÇIKTISI</h3>
+                            <button id="new-analysis-btn" class="action-btn text-btn">
+                                <i data-lucide="refresh-cw"></i> Yeni Analiz
+                            </button>
+                        </div>
+                        <div class="media-container" id="media-container">
+                            <!-- Image / Video will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Console Logs & Detection Details -->
+                <div class="grid-col-right">
+                    <!-- Progress Card -->
+                    <div class="glass-panel progress-panel hidden" id="progress-panel">
+                        <h3><i data-lucide="cpu" class="panel-icon spinning"></i> VİDEO ANALİZ EDİLİYOR</h3>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="progress-bar-fill">0%</div>
+                        </div>
+                        <p class="progress-status" id="progress-status">Yükleniyor...</p>
+                    </div>
+
+                    <!-- Detections Card -->
+                    <div class="glass-panel detections-panel" id="detections-panel">
+                        <div class="panel-header">
+                            <h3><i data-lucide="alert-triangle" class="panel-icon"></i> DETAYLI TESPİTLER</h3>
+                        </div>
+                        <div class="detections-content">
+                            <div class="no-detections" id="no-detections-msg">
+                                <i data-lucide="info" class="info-icon"></i>
+                                <p>Henüz tespit kaydı yok. Analiz etmek için fotoğraf veya video yükleyin.</p>
+                            </div>
+                            <div class="detections-list hidden" id="detections-list">
+                                <!-- Dynamic threat cards -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Log Console -->
+                    <div class="glass-panel console-panel">
+                        <div class="panel-header">
+                            <h3><i data-lucide="terminal" class="panel-icon"></i> CANLI SİSTEM GÜNLÜĞÜ</h3>
+                            <span class="console-badge">SSE STREAM</span>
+                        </div>
+                        <div class="console-body" id="console-body">
+                            <div class="console-line system">[SYSTEM] Güvenlik gözetim terminali aktif.</div>
+                            <div class="console-line system">[SYSTEM] Suspicious_Activities_nano.pt model yüklenmeye hazır.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Alarm sound -->
+    <audio id="alarm-sound" loop src="{{ url_for('static', filename='audio/alert.wav') }}"></audio>
+
+    <!-- App Logic -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
